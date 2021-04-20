@@ -2,6 +2,7 @@ package gdstorage
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -26,14 +27,27 @@ type AccountService struct {
 }
 
 func NewStorageService() (*drive.Service, error) {
+	// * Get the account service json content from .env
 	serviceAccountJsonContent := os.Getenv("GOOGLE_ACCOUNT_SERVICE_JSON")
-
 	if serviceAccountJsonContent == "" {
 		return &drive.Service{}, errors.New("Missing account service json data")
 	}
 
-	wd, err := os.Getwd()
+	// * Set project id env
+	var accountService AccountService
 
+	// * Parse json content into an object
+	if err := json.Unmarshal([]byte(serviceAccountJsonContent), &accountService); err != nil {
+		return &drive.Service{}, errors.New(fmt.Sprintf("Error parsing account service JSON content: %v", err))
+	}
+
+	// * Set project id
+	if err := os.Setenv("GOOGLE_PROJECT_ID", accountService.ProjectID); err != nil {
+		return &drive.Service{}, errors.New(fmt.Sprintf("Error setting project id: %v", err))
+	}
+
+	// * Getting working directory
+	wd, err := os.Getwd()
 	if err != nil {
 		return &drive.Service{}, errors.New(fmt.Sprintf("Error retrieving working directory: %v", err))
 	}
