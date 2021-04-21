@@ -170,5 +170,33 @@ if err != nil {
   return
 }
 
-fmt.Printf("Successfully created file. The ID is: %s", fileID)
+// You can get the direct URL using gdstorage.GetURL(id), this is what you want
+fmt.Printf("Successfully created file. The URL is: %s", gdstorage.GetURL(fileID))
+```
+
+### StoreFiles
+Store a single file to parent directory.
+```go
+fileInputs := []*gdstorage.StoreFileInput{}
+
+// files is []*multipart.FileHeader
+for i, file := range files {
+  fileInputs = append(fileInputs, &gdstorage.StoreFileInput{Name: fmt.Sprintf("test-multiple-file-%d", i), FileHeader: file})
+}
+
+parentID := "xxxxxxxxxxxxxxxxxx"
+
+fileIDs, err := gds.StoreFiles(fileInputs, parentID)
+if err != nil {
+  fmt.Println(err.Error())
+
+  return
+}
+
+fileURLs := []string{}
+for _, fileID := range fileIDs {
+  fileURLs = append(fileURLs, gdstorage.GetURL(fileID))
+}
+
+fmt.Printf("Successfully created multiple files. The URLs are: %v", fileURLs)
 ```
