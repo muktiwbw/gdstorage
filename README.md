@@ -228,3 +228,10 @@ if err := gds.DeleteFiles(fileIDs); err != nil {
 
 fmt.Printf("Successfully deleted files with ids: %v", fileIDs)
 ```
+
+### GetURL
+Get direct file URL to be displayed in your web.
+```go
+url := gdstorage.GetURL(fileID)
+fmt.Println(url)
+```
