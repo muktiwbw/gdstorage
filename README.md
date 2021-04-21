@@ -170,7 +170,7 @@ if err != nil {
   return
 }
 
-// You can get the direct URL using gdstorage.GetURL(id), this is what you want
+// You can get the direct URL using gdstorage.GetURL(id), this is what you want to save in DB
 fmt.Printf("Successfully created file. The URL is: %s", gdstorage.GetURL(fileID))
 ```
 
@@ -199,4 +199,32 @@ for _, fileID := range fileIDs {
 }
 
 fmt.Printf("Successfully created multiple files. The URLs are: %v", fileURLs)
+```
+
+### DeleteFile
+Store a single file to parent directory.
+```go
+fileID := "xxxxxxxxxxxxxxxxxx"
+
+if err := gds.DeleteFile(fileID); err != nil {
+  fmt.Println(err.Error())
+
+  return
+}
+
+fmt.Printf("Successfully deleted file with id: %s", fileID)
+```
+
+### DeleteFiles
+Store a single file to parent directory.
+```go
+fileIDs := []string{"xxxxxxxxxxxxxxxx", "yyyyyyyyyyyyyyyyyyyyyy", "zzzzzzzzzzzzzzzzzzz"}
+
+if err := gds.DeleteFiles(fileIDs); err != nil {
+  fmt.Println(err.Error())
+
+  return
+}
+
+fmt.Printf("Successfully deleted files with ids: %v", fileIDs)
 ```
