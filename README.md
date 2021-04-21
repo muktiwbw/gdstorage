@@ -103,7 +103,7 @@ Will output something like this
 ```
 
 ### CreateAppStorage
-Create a storage root directory for current GCP project. It will give you the directory id which you need to assign to `DRIVE_APP_DIR_ID` environment variable. Before you run it make sure to set `APP_NAME`
+Create a storage root directory for current GCP project.
 ```go
 storage, err := gds.CreateAppStorage()
 if err != nil {
@@ -113,4 +113,62 @@ if err != nil {
 }
 
 fmt.Println(storage)
+```
+It will give you the directory `id` which you need to assign to `DRIVE_APP_DIR_ID` environment variable. Before you run it make sure to set `APP_NAME` because your storage name will need app name in it.
+```json
+{
+  "id": "xxxxxxxxxxxxxxxx",
+  "name": "storage_super-cool-app_Super Cool App",
+  "url": "https://url-to-storage.dir/xxxxxxxxxxxxxxxx",
+  "mimeType": "image/png",
+  "createdAt": "timestamp"
+}
+```
+
+### GetDirectory
+Returns a directory by its `id`. It can be used to check if certain parent directory exists or not.
+```go
+parentID := "xxxxxxxxxxxxxxxxxx"
+
+storage, err := gds.GetDirectory(parentID)
+if err != nil {
+  fmt.Println(err.Error())
+
+  return
+}
+
+// You can check if it exists or not
+if storage.ID != "" {
+  fmt.Println(fmt.Sprintf("Directory with id %s exists.", storage.ID))
+} else {
+  fmt.Println(fmt.Sprintf("Directory with id %s does not exist.", storage.ID))
+}
+
+fmt.Println(storage)
+```
+```json
+{
+  "id": "xxxxxxxxxxxxxxxx",
+  "name": "storage_super-cool-app_Super Cool App",
+  "url": "https://url-to-storage.dir/xxxxxxxxxxxxxxxx",
+  "mimeType": "image/png",
+  "createdAt": "timestamp"
+}
+```
+
+### StoreFile
+Store a single file to parent directory.
+```go
+fileName := "test-file"
+parentID := "xxxxxxxxxxxxxxxxxx"
+
+// file is *multipart.FileHeader
+fileID, err := gds.StoreFile(&gdstorage.StoreFileInput{Name: fileName, FileHeader: file}, parentID)
+if err != nil {
+  fmt.Println(err.Error())
+
+  return
+}
+
+fmt.Printf("Successfully created file. The ID is: %s", fileID)
 ```
