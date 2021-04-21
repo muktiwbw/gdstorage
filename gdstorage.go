@@ -13,11 +13,11 @@ import (
 )
 
 type DriveFile struct {
-	ID        string
-	Name      string
-	URL       string
-	MimeType  string
-	CreatedAt time.Time
+	ID        string    `json:"id"`
+	Name      string    `json:"name"`
+	URL       string    `json:"url"`
+	MimeType  string    `json:"mimeType"`
+	CreatedAt time.Time `json:"createdAt"`
 }
 
 type StoreFileInput struct {
