@@ -188,7 +188,7 @@ func (s *googleDriveStorage) StoreFile(file *StoreFileInput, parentID string) (s
 // * Store multiple files
 func (s *googleDriveStorage) StoreFiles(files []*StoreFileInput, parentID string) ([]string, error) {
 	// * Prepare the slice
-	var driveFiles []string
+	driveFiles := []string{}
 
 	// * Is parent directory available?
 	parentDir, err := s.GetDirectory(parentID)
