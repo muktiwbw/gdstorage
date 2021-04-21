@@ -202,7 +202,7 @@ fmt.Printf("Successfully created multiple files. The URLs are: %v", fileURLs)
 ```
 
 ### DeleteFile
-Store a single file to parent directory.
+Delete a file by id.
 ```go
 fileID := "xxxxxxxxxxxxxxxxxx"
 
@@ -216,7 +216,7 @@ fmt.Printf("Successfully deleted file with id: %s", fileID)
 ```
 
 ### DeleteFiles
-Store a single file to parent directory.
+Delete multiple files by ids.
 ```go
 fileIDs := []string{"xxxxxxxxxxxxxxxx", "yyyyyyyyyyyyyyyyyyyyyy", "zzzzzzzzzzzzzzzzzzz"}
 
