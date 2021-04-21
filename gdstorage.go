@@ -26,7 +26,25 @@ type StoreFileInput struct {
 	FileSource *multipart.File
 }
 
-func FormatDriveFile(f *drive.File) (DriveFile, error) {
+type GoogleDriveStorage interface {
+	GetAppStorages() ([]DriveFile, error)
+	CreateAppStorage() (DriveFile, error)
+	GetDirectory(dirID string) (DriveFile, error)
+	StoreFile(file *StoreFileInput, parentID string) (string, error)
+	StoreFiles(files []*StoreFileInput, parentID string) ([]string, error)
+	DeleteFile(fileID string) error
+	DeleteFiles(fileIDs []string) error
+}
+
+type googleDriveStorage struct {
+	service *drive.Service
+}
+
+func New(srv *drive.Service) GoogleDriveStorage {
+	return &googleDriveStorage{srv}
+}
+
+func formatDriveFile(f *drive.File) (DriveFile, error) {
 	createdAt, err := time.Parse(time.RFC3339, f.CreatedTime)
 	if err != nil {
 		return DriveFile{}, err
@@ -50,17 +68,17 @@ func GetURL(id string) string {
 // * =========================================================================================
 
 // * Get all app storages in root directory
-func GetAppStorages(srv *drive.Service) ([]DriveFile, error) {
+func (s *googleDriveStorage) GetAppStorages() ([]DriveFile, error) {
 	fileList := []DriveFile{}
 
-	driveFileList, err := srv.Files.List().Q("'root' in parents and mimeType='application/vnd.google-apps.folder' and name contains 'storage_'").Fields("files(id, name, webViewLink, mimeType, createdTime)").Do()
+	driveFileList, err := s.service.Files.List().Q("'root' in parents and mimeType='application/vnd.google-apps.folder' and name contains 'storage_'").Fields("files(id, name, webViewLink, mimeType, createdTime)").Do()
 
 	if err != nil {
 		return fileList, err
 	}
 
 	for _, file := range driveFileList.Files {
-		formattedDriveFile, err := FormatDriveFile(file)
+		formattedDriveFile, err := formatDriveFile(file)
 
 		if err != nil {
 			return fileList, err
@@ -73,17 +91,17 @@ func GetAppStorages(srv *drive.Service) ([]DriveFile, error) {
 }
 
 // * Create a new app storage, put the id to .env file by the name DRIVE_APP_DIR_ID
-func CreateAppStorage(srv *drive.Service) (DriveFile, error) {
+func (s *googleDriveStorage) CreateAppStorage() (DriveFile, error) {
 	appName := fmt.Sprintf("storage_%s_%s", os.Getenv("GOOGLE_PROJECT_ID"), os.Getenv("APP_NAME"))
 
-	appDir, err := srv.Files.Create(&drive.File{Name: appName, MimeType: "application/vnd.google-apps.folder", Parents: []string{"root"}}).Do()
+	appDir, err := s.service.Files.Create(&drive.File{Name: appName, MimeType: "application/vnd.google-apps.folder", Parents: []string{"root"}}).Do()
 
 	if err != nil {
 		return DriveFile{}, err
 	}
 
 	// * Set to read only permission for anyone
-	_, err = srv.Permissions.Create(appDir.Id, &drive.Permission{Type: "anyone", Role: "reader"}).Do()
+	_, err = s.service.Permissions.Create(appDir.Id, &drive.Permission{Type: "anyone", Role: "reader"}).Do()
 
 	if err != nil {
 		return DriveFile{}, err
@@ -91,7 +109,7 @@ func CreateAppStorage(srv *drive.Service) (DriveFile, error) {
 
 	// ? Adding your real email so that you can easily organize sub-folders in the website
 	if em := os.Getenv("DRIVE_ORGANIZER_EMAIL"); em != "" {
-		_, err = srv.Permissions.Create(appDir.Id, &drive.Permission{Type: "user", Role: "writer", EmailAddress: em}).Do()
+		_, err = s.service.Permissions.Create(appDir.Id, &drive.Permission{Type: "user", Role: "writer", EmailAddress: em}).Do()
 
 		if err != nil {
 			return DriveFile{}, err
@@ -104,9 +122,9 @@ func CreateAppStorage(srv *drive.Service) (DriveFile, error) {
 }
 
 // * Get directory by id
-func GetDirectory(srv *drive.Service, dirID string) (DriveFile, error) {
+func (s *googleDriveStorage) GetDirectory(dirID string) (DriveFile, error) {
 	// * If you provides appdir id, check by the id
-	appDir, err := srv.Files.Get(dirID).Fields("id, name, webViewLink, mimeType, createdTime").Do()
+	appDir, err := s.service.Files.Get(dirID).Fields("id, name, webViewLink, mimeType, createdTime").Do()
 
 	// * Check if err is caused by something other than not found
 	if err != nil {
@@ -118,7 +136,7 @@ func GetDirectory(srv *drive.Service, dirID string) (DriveFile, error) {
 	}
 
 	// * Format output data
-	formattedDriveFile, err := FormatDriveFile(appDir)
+	formattedDriveFile, err := formatDriveFile(appDir)
 	if err != nil {
 		return formattedDriveFile, err
 	}
@@ -128,9 +146,9 @@ func GetDirectory(srv *drive.Service, dirID string) (DriveFile, error) {
 
 // * Store a file
 // TODO - Currently only accepts image files
-func StoreFile(srv *drive.Service, file *StoreFileInput, parentID string) (string, error) {
+func (s *googleDriveStorage) StoreFile(file *StoreFileInput, parentID string) (string, error) {
 	// * Is parent directory available?
-	parentDir, err := GetDirectory(srv, parentID)
+	parentDir, err := s.GetDirectory(parentID)
 	if err != nil {
 		return "", err
 	} else if err == nil && parentDir.ID == "" {
@@ -159,7 +177,7 @@ func StoreFile(srv *drive.Service, file *StoreFileInput, parentID string) (strin
 	}
 
 	// * Store the file
-	driveFile, err := srv.Files.Create(&drive.File{Name: fullFileName, MimeType: mimeType, Parents: []string{parentDir.ID}}).Media(src).Do()
+	driveFile, err := s.service.Files.Create(&drive.File{Name: fullFileName, MimeType: mimeType, Parents: []string{parentDir.ID}}).Media(src).Do()
 	if err != nil {
 		return "", err
 	}
@@ -168,12 +186,12 @@ func StoreFile(srv *drive.Service, file *StoreFileInput, parentID string) (strin
 }
 
 // * Store multiple files
-func StoreFiles(srv *drive.Service, files []*StoreFileInput, parentID string) ([]string, error) {
+func (s *googleDriveStorage) StoreFiles(files []*StoreFileInput, parentID string) ([]string, error) {
 	// * Prepare the slice
 	var driveFiles []string
 
 	// * Is parent directory available?
-	parentDir, err := GetDirectory(srv, parentID)
+	parentDir, err := s.GetDirectory(parentID)
 	if err != nil {
 		return driveFiles, err
 	} else if err == nil && parentDir.ID == "" {
@@ -210,7 +228,7 @@ func StoreFiles(srv *drive.Service, files []*StoreFileInput, parentID string) ([
 		}
 
 		// * Store each file
-		driveFile, err := srv.Files.Create(&drive.File{Name: fullFileName, MimeType: mimeType, Parents: []string{parentDir.ID}}).Media(*file.FileSource).Do()
+		driveFile, err := s.service.Files.Create(&drive.File{Name: fullFileName, MimeType: mimeType, Parents: []string{parentDir.ID}}).Media(*file.FileSource).Do()
 		if err != nil {
 			return driveFiles, err
 		}
@@ -222,8 +240,8 @@ func StoreFiles(srv *drive.Service, files []*StoreFileInput, parentID string) ([
 }
 
 // * Delete a file
-func DeleteFile(srv *drive.Service, fileID string) error {
-	if err := srv.Files.Delete(fileID).Do(); err != nil {
+func (s *googleDriveStorage) DeleteFile(fileID string) error {
+	if err := s.service.Files.Delete(fileID).Do(); err != nil {
 		e := strings.Split(err.Error(), ", ")
 		if e[len(e)-1] == "notFound" {
 			return errors.New(fmt.Sprintf("Unable to find file with ID %s", fileID))
@@ -236,9 +254,9 @@ func DeleteFile(srv *drive.Service, fileID string) error {
 }
 
 // * Delete multiple files
-func DeleteFiles(srv *drive.Service, fileIDs []string) error {
+func (s *googleDriveStorage) DeleteFiles(fileIDs []string) error {
 	for _, fileID := range fileIDs {
-		if err := srv.Files.Delete(fileID).Do(); err != nil {
+		if err := s.service.Files.Delete(fileID).Do(); err != nil {
 			e := strings.Split(err.Error(), ", ")
 			if e[len(e)-1] == "notFound" {
 				return errors.New(fmt.Sprintf("Unable to find file with ID %s", fileID))
