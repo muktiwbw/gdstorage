@@ -55,7 +55,7 @@ func formatDriveFile(f *drive.File) (DriveFile, error) {
 	if f.MimeType == "application/vnd.google-apps.folder" {
 		url = f.WebViewLink
 	} else {
-		url = GetURL(url)
+		url = GetURL(f.Id)
 	}
 
 	return DriveFile{
