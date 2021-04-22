@@ -140,18 +140,15 @@ func (s *googleDriveStorage) CreateAppStorage() (DriveFile, error) {
 		return DriveFile{}, errors.New("Missing DRIVE_ORGANIZER_EMAIL in .env")
 	}
 
-	createdAt, err := time.Parse(time.RFC3339, appDir.CreatedTime)
+	appDir.WebViewLink = fmt.Sprintf("https://drive.google.com/drive/folders/%s", appDir.Id)
+	appDir.MimeType = "application/vnd.google-apps.folder"
+
+	formattedAppDir, err := formatDriveFile(appDir)
 	if err != nil {
 		return DriveFile{}, err
 	}
 
-	return DriveFile{
-		ID:        appDir.Id,
-		Name:      appDir.Name,
-		URL:       fmt.Sprintf("https://drive.google.com/drive/folders/%s", appDir.Id),
-		MimeType:  "application/vnd.google-apps.folder",
-		CreatedAt: createdAt,
-	}, nil
+	return formattedAppDir, nil
 }
 
 // * Get directory by id
@@ -162,7 +159,7 @@ func (s *googleDriveStorage) GetDirectory(dirID string) (DriveFile, error) {
 	// * Check if err is caused by something other than not found
 	if err != nil {
 		e := strings.Split(err.Error(), ", ")
-		if e[len(e)-1] != "notFound" {
+		if e[len(e)-1] == "notFound" {
 			return DriveFile{}, nil
 		}
 		return DriveFile{}, err
@@ -296,11 +293,9 @@ func (s *googleDriveStorage) StoreFiles(files []*StoreFileInput, parentID string
 // * Delete a file
 func (s *googleDriveStorage) DeleteFile(fileID string) error {
 	if err := s.service.Files.Delete(fileID).Do(); err != nil {
-		e := strings.Split(err.Error(), ", ")
-		if e[len(e)-1] == "notFound" {
-			return errors.New(fmt.Sprintf("ERR404: Unable to find file with ID %s", fileID))
-		}
-
+		// * You can indicate if it's deletion error or simply not found by:
+		// e := strings.Split(err.Error(), ", ")
+		// if e[len(e)-1] == "notFound" { return errors.New(fmt.Sprintf("Unable to find file with ID %s", fileID)) }
 		return err
 	}
 
@@ -311,11 +306,6 @@ func (s *googleDriveStorage) DeleteFile(fileID string) error {
 func (s *googleDriveStorage) DeleteFiles(fileIDs []string) error {
 	for _, fileID := range fileIDs {
 		if err := s.service.Files.Delete(fileID).Do(); err != nil {
-			e := strings.Split(err.Error(), ", ")
-			if e[len(e)-1] == "notFound" {
-				return errors.New(fmt.Sprintf("ERR404: Unable to find file with ID %s", fileID))
-			}
-
 			return err
 		}
 	}
