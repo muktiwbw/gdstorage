@@ -1,6 +1,8 @@
 # Go Google Drive Storage API
 Simple Go Google Drive API for free webhosters (e.g. Heroku) which the sole purpose is to store generic files such as images and pdf/docs input by users. But as of now it can only store image files (jpg, jpeg, png).
 
+This package doen't use goroutine for running api requests because I just learned Go in general. I would probably update this package in the future once I learned deep into it. I would appreciate if anyone can add them here 😉
+
 ## 1. Installation
 Install package.
 ```
