@@ -118,7 +118,18 @@ func (s *googleDriveStorage) CreateAppStorage() (DriveFile, error) {
 		return DriveFile{}, errors.New("Missing DRIVE_ORGANIZER_EMAIL in .env")
 	}
 
-	return DriveFile{ID: appDir.Id, Name: appDir.Name}, nil
+	createdAt, err := time.Parse(time.RFC3339, appDir.CreatedTime)
+	if err != nil {
+		return DriveFile{}, err
+	}
+
+	return DriveFile{
+		ID:        appDir.Id,
+		Name:      appDir.Name,
+		URL:       fmt.Sprintf("https://drive.google.com/drive/folders/%s", appDir.Id),
+		MimeType:  "application/vnd.google-apps.folder",
+		CreatedAt: createdAt,
+	}, nil
 }
 
 // * Get directory by id
