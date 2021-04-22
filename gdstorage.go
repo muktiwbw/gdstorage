@@ -269,7 +269,7 @@ func (s *googleDriveStorage) DeleteFile(fileID string) error {
 	if err := s.service.Files.Delete(fileID).Do(); err != nil {
 		e := strings.Split(err.Error(), ", ")
 		if e[len(e)-1] == "notFound" {
-			return errors.New(fmt.Sprintf("Unable to find file with ID %s", fileID))
+			return errors.New(fmt.Sprintf("ERR404: Unable to find file with ID %s", fileID))
 		}
 
 		return err
@@ -284,7 +284,7 @@ func (s *googleDriveStorage) DeleteFiles(fileIDs []string) error {
 		if err := s.service.Files.Delete(fileID).Do(); err != nil {
 			e := strings.Split(err.Error(), ", ")
 			if e[len(e)-1] == "notFound" {
-				return errors.New(fmt.Sprintf("Unable to find file with ID %s", fileID))
+				return errors.New(fmt.Sprintf("ERR404: Unable to find file with ID %s", fileID))
 			}
 
 			return err
