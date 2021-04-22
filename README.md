@@ -165,6 +165,39 @@ fmt.Println(storage)
 }
 ```
 
+### GetFilesByQuery
+Returns files by query. It can be used to check if certain files exist or not.
+```go
+query := "name contains 'user_69_' and mimeType='image/jpeg'"
+
+files, err := gds.GetFilesByQuery(query)
+if err != nil {
+  fmt.Println(err.Error())
+
+  return
+}
+
+fmt.Println(files)
+```
+```json
+[
+  {
+    "id": "xxxxxxxxxxxxxxxx",
+    "name": "user_69_image_89sudj9fjs9fd8",
+    "url": "https://url-to-file.dir/xxxxxxxxxxxxxxxx",
+    "mimeType": "image/jpeg",
+    "createdAt": "timestamp"
+  },
+  {
+    "id": "yyyyyyyyyyyyyyyyy",
+    "name": "user_69_image_sdf89y48w98grg",
+    "url": "https://url-to-file.dir/yyyyyyyyyyyyyyyyy",
+    "mimeType": "image/jpeg",
+    "createdAt": "timestamp"
+  }
+]
+```
+
 ### StoreFile
 Store a single file to parent directory.
 ```go
