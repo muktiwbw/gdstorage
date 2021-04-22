@@ -30,6 +30,7 @@ type GoogleDriveStorage interface {
 	GetAppStorages() ([]DriveFile, error)
 	CreateAppStorage() (DriveFile, error)
 	GetDirectory(dirID string) (DriveFile, error)
+	GetFilesByQuery(query string) ([]DriveFile, error)
 	StoreFile(file *StoreFileInput, parentID string) (string, error)
 	StoreFiles(files []*StoreFileInput, parentID string) ([]string, error)
 	DeleteFile(fileID string) error
@@ -50,10 +51,17 @@ func formatDriveFile(f *drive.File) (DriveFile, error) {
 		return DriveFile{}, err
 	}
 
+	var url string
+	if f.MimeType == "application/vnd.google-apps.folder" {
+		url = f.WebViewLink
+	} else {
+		url = GetURL(url)
+	}
+
 	return DriveFile{
 		ID:        f.Id,
 		Name:      f.Name,
-		URL:       f.WebViewLink,
+		URL:       url,
 		MimeType:  f.MimeType,
 		CreatedAt: createdAt,
 	}, nil
@@ -167,6 +175,27 @@ func (s *googleDriveStorage) GetDirectory(dirID string) (DriveFile, error) {
 	}
 
 	return formattedDriveFile, nil
+}
+
+// * Get files by query
+func (s *googleDriveStorage) GetFilesByQuery(query string) ([]DriveFile, error) {
+	dfs, err := s.service.Files.List().Q(query).Fields("id, name, mimeType, createdTime").Do()
+	if err != nil {
+		return []DriveFile{}, err
+	}
+
+	driveFiles := []DriveFile{}
+
+	for _, df := range dfs.Files {
+		driveFile, err := formatDriveFile(df)
+		if err != nil {
+			return []DriveFile{}, err
+		}
+
+		driveFiles = append(driveFiles, driveFile)
+	}
+
+	return driveFiles, nil
 }
 
 // * Store a file
