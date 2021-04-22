@@ -82,21 +82,21 @@ Will output something like this
     "id": "xxxxxxxxxxxxxxxx",
     "name": "storage_super-cool-app_Super Cool App",
     "url": "https://url-to-storage.dir/xxxxxxxxxxxxxxxx",
-    "mimeType": "image/png",
+    "mimeType": "application/vnd.google-apps.folder",
     "createdAt": "timestamp"
   },
   {
     "id": "yyyyyyyyyyyyyyyyy",
     "name": "storage_semi-cool-app_Semi Cool App",
     "url": "https://url-to-storage.dir/yyyyyyyyyyyyyyyyy",
-    "mimeType": "image/png",
+    "mimeType": "application/vnd.google-apps.folder",
     "createdAt": "timestamp"
   },
   {
     "id": "zzzzzzzzzzzzzzzzz",
     "name": "storage_generic-app_Generic App",
     "url": "https://url-to-storage.dir/zzzzzzzzzzzzzzzzz",
-    "mimeType": "image/png",
+    "mimeType": "application/vnd.google-apps.folder",
     "createdAt": "timestamp"
   }
 ]
@@ -120,10 +120,17 @@ It will give you the directory `id` which you need to assign to `DRIVE_APP_DIR_I
   "id": "xxxxxxxxxxxxxxxx",
   "name": "storage_super-cool-app_Super Cool App",
   "url": "https://url-to-storage.dir/xxxxxxxxxxxxxxxx",
-  "mimeType": "image/png",
+  "mimeType": "application/vnd.google-apps.folder",
   "createdAt": "timestamp"
 }
 ```
+Creating a root directory also gives `writer` permission to google account with `DRIVE_ORGANIZER_EMAIL` email address. From now on you can create folders or put static files in it.
+
+![alt text](https://i.imgur.com/ry23IXF.png "Add new folder")
+
+For folders, you might want to switch ownership with your service account email since those folders will be populated by your app.
+
+![alt text](https://i.imgur.com/wi5gGWS.png "Switch owner")
 
 ### GetDirectory
 Returns a directory by its `id`. It can be used to check if certain parent directory exists or not.
@@ -151,7 +158,7 @@ fmt.Println(storage)
   "id": "xxxxxxxxxxxxxxxx",
   "name": "storage_super-cool-app_Super Cool App",
   "url": "https://url-to-storage.dir/xxxxxxxxxxxxxxxx",
-  "mimeType": "image/png",
+  "mimeType": "application/vnd.google-apps.folder",
   "createdAt": "timestamp"
 }
 ```
