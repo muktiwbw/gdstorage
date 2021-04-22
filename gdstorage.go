@@ -94,6 +94,20 @@ func (s *googleDriveStorage) GetAppStorages() ([]DriveFile, error) {
 func (s *googleDriveStorage) CreateAppStorage() (DriveFile, error) {
 	appName := fmt.Sprintf("storage_%s_%s", os.Getenv("GOOGLE_PROJECT_ID"), os.Getenv("APP_NAME"))
 
+	// * Check if folder with the same name in root exists
+	existingDir, err := s.service.Files.List().Q(fmt.Sprintf("'root' in parents and mimeType='application/vnd.google-apps.folder' and name='%s'", appName)).Do()
+	if err != nil {
+		return DriveFile{}, err
+	}
+	if len(existingDir.Files) >= 1 {
+		df, err := formatDriveFile(existingDir.Files[0])
+		if err != nil {
+			return DriveFile{}, errors.New(fmt.Sprintf("App storage already exists, but failed to parse data: %v", err))
+		}
+
+		return df, nil
+	}
+
 	appDir, err := s.service.Files.Create(&drive.File{Name: appName, MimeType: "application/vnd.google-apps.folder", Parents: []string{"root"}}).Do()
 
 	if err != nil {
