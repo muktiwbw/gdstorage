@@ -119,8 +119,8 @@ It will give you the directory `id` which you need to assign to `DRIVE_APP_DIR_I
 {
   "id": "xxxxxxxxxxxxxxxx",
   "name": "storage_super-cool-app_Super Cool App",
-  "url": "",
-  "mimeType": "",
+  "url": "https://url-to-storage.dir/xxxxxxxxxxxxxxxx",
+  "mimeType": "application/vnd.google-apps.folder",
   "createdAt": "timestamp"
 }
 ```
