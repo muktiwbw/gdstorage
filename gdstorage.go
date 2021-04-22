@@ -142,6 +142,7 @@ func (s *googleDriveStorage) CreateAppStorage() (DriveFile, error) {
 
 	appDir.WebViewLink = fmt.Sprintf("https://drive.google.com/drive/folders/%s", appDir.Id)
 	appDir.MimeType = "application/vnd.google-apps.folder"
+	appDir.CreatedTime = time.Now().Format(time.RFC3339)
 
 	formattedAppDir, err := formatDriveFile(appDir)
 	if err != nil {
@@ -176,7 +177,7 @@ func (s *googleDriveStorage) GetDirectory(dirID string) (DriveFile, error) {
 
 // * Get files by query
 func (s *googleDriveStorage) GetFilesByQuery(query string) ([]DriveFile, error) {
-	dfs, err := s.service.Files.List().Q(query).Fields("id, name, mimeType, createdTime").Do()
+	dfs, err := s.service.Files.List().Q(query).Fields("files(id, name, mimeType, createdTime)").Do()
 	if err != nil {
 		return []DriveFile{}, err
 	}
