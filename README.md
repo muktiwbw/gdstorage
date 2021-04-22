@@ -82,21 +82,21 @@ Will output something like this
     "id": "xxxxxxxxxxxxxxxx",
     "name": "storage_super-cool-app_Super Cool App",
     "url": "https://url-to-storage.dir/xxxxxxxxxxxxxxxx",
-    "mimeType": "image/png",
+    "mimeType": "application/vnd.google-apps.folder",
     "createdAt": "timestamp"
   },
   {
     "id": "yyyyyyyyyyyyyyyyy",
     "name": "storage_semi-cool-app_Semi Cool App",
     "url": "https://url-to-storage.dir/yyyyyyyyyyyyyyyyy",
-    "mimeType": "image/png",
+    "mimeType": "application/vnd.google-apps.folder",
     "createdAt": "timestamp"
   },
   {
     "id": "zzzzzzzzzzzzzzzzz",
     "name": "storage_generic-app_Generic App",
     "url": "https://url-to-storage.dir/zzzzzzzzzzzzzzzzz",
-    "mimeType": "image/png",
+    "mimeType": "application/vnd.google-apps.folder",
     "createdAt": "timestamp"
   }
 ]
@@ -119,8 +119,8 @@ It will give you the directory `id` which you need to assign to `DRIVE_APP_DIR_I
 {
   "id": "xxxxxxxxxxxxxxxx",
   "name": "storage_super-cool-app_Super Cool App",
-  "url": "https://url-to-storage.dir/xxxxxxxxxxxxxxxx",
-  "mimeType": "image/png",
+  "url": "",
+  "mimeType": "",
   "createdAt": "timestamp"
 }
 ```
@@ -151,7 +151,7 @@ fmt.Println(storage)
   "id": "xxxxxxxxxxxxxxxx",
   "name": "storage_super-cool-app_Super Cool App",
   "url": "https://url-to-storage.dir/xxxxxxxxxxxxxxxx",
-  "mimeType": "image/png",
+  "mimeType": "application/vnd.google-apps.folder",
   "createdAt": "timestamp"
 }
 ```
