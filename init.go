@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"path/filepath"
 
@@ -48,6 +49,7 @@ func NewStorageService() (*drive.Service, error) {
 
 	// * Getting working directory
 	wd, err := os.Getwd()
+	log.Printf("Working dir: %s", wd)
 	if err != nil {
 		return &drive.Service{}, errors.New(fmt.Sprintf("Error retrieving working directory: %v", err))
 	}
@@ -59,6 +61,8 @@ func NewStorageService() (*drive.Service, error) {
 		if err != nil {
 			return &drive.Service{}, errors.New(fmt.Sprintf("Error writing service account file: %v", err))
 		}
+	} else if err != nil && !os.IsNotExist(err) {
+		return &drive.Service{}, errors.New(fmt.Sprintf("Error loading service account file: %v", err))
 	} else if err == nil {
 		// * If file actually exists
 		jsonContent, err := os.ReadFile(filepath.Join(wd, "svracc.json"))
@@ -75,8 +79,6 @@ func NewStorageService() (*drive.Service, error) {
 				return &drive.Service{}, errors.New(fmt.Sprintf("Error overriding service account file: %v", err))
 			}
 		}
-	} else if err != nil && !os.IsNotExist(err) {
-		return &drive.Service{}, errors.New(fmt.Sprintf("Error loading service account file: %v", err))
 	}
 
 	// * Create a new drive service
