@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 
@@ -49,7 +48,6 @@ func NewStorageService() (*drive.Service, error) {
 
 	// * Getting working directory
 	wd, err := os.Getwd()
-	log.Printf("Working dir: %s", wd)
 	if err != nil {
 		return &drive.Service{}, errors.New(fmt.Sprintf("Error retrieving working directory: %v", err))
 	}
